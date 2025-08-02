@@ -1,4 +1,4 @@
-entrypoint = "index.js"
+entrypoint = "backend/index.js"
 modules = ["nodejs-22"]
 hidden = [".config", "package-lock.json"]
 
@@ -12,3 +12,15 @@ channel = "stable-24_11"
 run = ["node", "index.js"]
 deploymentTarget = "autoscale"
 ignorePorts = false
+
+[workflows]
+runButton = "Start Zync Server"
+
+[[workflows.workflow]]
+name = "Start Zync Server"
+author = 40651214
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd backend && npm install && npm start"
