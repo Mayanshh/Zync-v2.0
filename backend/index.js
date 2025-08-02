@@ -2967,8 +2967,8 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'frontend', 'index.html'));
 });
 
-// Production-ready port configuration for Render
-const PORT = process.env.PORT || 10000;
+// Production-ready port configuration for Render and Replit
+const PORT = process.env.PORT || (process.env.NODE_ENV === 'production' ? 10000 : 5000);
 const HOST = '0.0.0.0'; // Always bind to 0.0.0.0 for deployment
 
 // Graceful shutdown handler

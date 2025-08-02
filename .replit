@@ -23,8 +23,12 @@ mode = "sequential"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "cd backend && npm install && npm start"
+args = "cd backend && npm install && NODE_ENV=development npm start"
+
+[[ports]]
+localPort = 10000
+externalPort = 80
 
 [[ports]]
 localPort = 5000
-externalPort = 80
+externalPort = 443
