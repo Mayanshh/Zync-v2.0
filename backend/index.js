@@ -2968,7 +2968,7 @@ app.get('*', (req, res) => {
 });
 
 // Production-ready port configuration for Render and Replit
-const PORT = process.env.PORT || (process.env.NODE_ENV === 'production' ? 10000 : 5000);
+const PORT = process.env.PORT || 5000; // Always use 5000 for Replit, 10000 for Render
 const HOST = '0.0.0.0'; // Always bind to 0.0.0.0 for deployment
 
 // Graceful shutdown handler
