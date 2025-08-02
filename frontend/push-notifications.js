@@ -1173,3 +1173,87 @@ window.showCriticalWarning = function(message) {
     initializeNotificationSystem();
   }
 })();
+// Initialize push notifications
+function initializePushNotifications() {
+    console.log('Initializing push notifications...');
+    
+    // Check if service workers are supported
+    if ('serviceWorker' in navigator && 'PushManager' in window) {
+        console.log('Push notifications are supported');
+        
+        // Register service worker
+        navigator.serviceWorker.register('/service-worker.js')
+            .then(function(registration) {
+                console.log('Service Worker registered successfully:', registration);
+                
+                // Check if user has already granted permission
+                if (Notification.permission === 'granted') {
+                    subscribeToPushNotifications(registration);
+                } else if (Notification.permission !== 'denied') {
+                    // Request permission
+                    Notification.requestPermission().then(function(permission) {
+                        if (permission === 'granted') {
+                            subscribeToPushNotifications(registration);
+                        }
+                    });
+                }
+            })
+            .catch(function(error) {
+                console.error('Service Worker registration failed:', error);
+            });
+    } else {
+        console.log('Push notifications are not supported in this browser');
+    }
+}
+
+// Subscribe to push notifications
+async function subscribeToPushNotifications(registration) {
+    try {
+        // Get VAPID public key from server
+        const response = await fetch('/api/push-key');
+        const { publicKey } = await response.json();
+        
+        // Convert VAPID key to Uint8Array
+        const vapidKey = urlBase64ToUint8Array(publicKey);
+        
+        // Subscribe to push notifications
+        const subscription = await registration.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: vapidKey
+        });
+        
+        // Send subscription to server
+        await fetch('/api/push-subscribe', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ subscription })
+        });
+        
+        console.log('Successfully subscribed to push notifications');
+    } catch (error) {
+        console.error('Failed to subscribe to push notifications:', error);
+    }
+}
+
+// Helper function to convert VAPID key
+function urlBase64ToUint8Array(base64String) {
+    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+    const base64 = (base64String + padding)
+        .replace(/-/g, '+')
+        .replace(/_/g, '/');
+    
+    const rawData = window.atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+    
+    for (let i = 0; i < rawData.length; ++i) {
+        outputArray[i] = rawData.charCodeAt(i);
+    }
+    return outputArray;
+}
+
+// Export for use in other files
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = { initializePushNotifications };
+}

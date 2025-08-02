@@ -1127,8 +1127,12 @@ app.get('/api/nearby', isAuthenticated, async (req, res) => {
     const userId = req.session.userId;
     const user = await User.findById(userId);
 
-    if (!user || !user.lastLocation) {
-      return res.status(400).json({ error: 'User location not available' });
+    if (!user || !user.lastLocation || 
+        typeof user.lastLocation.latitude !== 'number' || 
+        typeof user.lastLocation.longitude !== 'number' ||
+        isNaN(user.lastLocation.latitude) || 
+        isNaN(user.lastLocation.longitude)) {
+      return res.status(400).json({ error: 'User location not available or invalid' });
     }
 
     // Set cache headers to prevent stale data during anonymous mode changes
@@ -1142,6 +1146,10 @@ app.get('/api/nearby', isAuthenticated, async (req, res) => {
     const nearbyUsers = await User.find({
       _id: { $ne: userId },
       lastLocation: { $exists: true },
+      'lastLocation.latitude': { $exists: true, $type: 'number' },
+      'lastLocation.longitude': { $exists: true, $type: 'number' },
+      banned: { $ne: true },
+      deleted: { $ne: true },
       $expr: {
         $lte: [
           {
@@ -1152,17 +1160,17 @@ app.get('/api/nearby', isAuthenticated, async (req, res) => {
                   $add: [
                     {
                       $multiply: [
-                        { $sin: { $multiply: [{ $divide: [{ $arrayElemAt: ['$lastLocation.latitude', 0] }, 180] }, Math.PI] } },
+                        { $sin: { $multiply: [{ $divide: ['$lastLocation.latitude', 180] }, Math.PI] } },
                         { $sin: { $multiply: [{ $divide: [user.lastLocation.latitude, 180] }, Math.PI] } }
                       ]
                     },
                     {
                       $multiply: [
-                        { $cos: { $multiply: [{ $divide: [{ $arrayElemAt: ['$lastLocation.latitude', 0] }, 180] }, Math.PI] } },
+                        { $cos: { $multiply: [{ $divide: ['$lastLocation.latitude', 180] }, Math.PI] } },
                         { $cos: { $multiply: [{ $divide: [user.lastLocation.latitude, 180] }, Math.PI] } },
                         { $cos: {
                           $subtract: [
-                            { $multiply: [{ $divide: [{ $arrayElemAt: ['$lastLocation.longitude', 0] }, 180] }, Math.PI] },
+                            { $multiply: [{ $divide: ['$lastLocation.longitude', 180] }, Math.PI] },
                             { $multiply: [{ $divide: [user.lastLocation.longitude, 180] }, Math.PI] }
                           ]
                         }}
