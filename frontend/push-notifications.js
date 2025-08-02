@@ -9,338 +9,318 @@ window.showCriticalWarning = function(message) {
 };
 
 
-// Push Notification Client Code
+// Push Notifications Manager for Zync
 (function() {
   'use strict';
 
-  // Use a namespace to prevent duplicate variable declarations
-  if (typeof window.ZyncNotifications !== 'undefined') {
-    return;
-  }
-
+  // Create global namespace
   window.ZyncNotifications = {
+    notificationSystemInitialized: false,
+    csrfToken: null,
+    serviceWorkerRegistration: null,
     NOTIFICATION_POLLING_INTERVAL: 15000,
-    notificationCsrfToken: null,
     shownNotifications: new Set(),
     currentSubscription: null,
-    notificationSystemInitialized: false,
     notificationSystemStarted: false,
-    notificationPollingSetup: false
+    notificationPollingSetup: false,
+    acknowledgedWarnings: new Set(),
+    deliveredWarnings: new Set(),
+    processedNotifications: new Set(),
+    activeWarningModals: new Set(),
+    globalWarningTracker: new Set()
   };
 
-  // Fetch CSRF token first
-  async function fetchCsrfToken() {
-    try {
-      const response = await fetch('/api/csrf-token');
-      const data = await response.json();
-      window.ZyncNotifications.notificationCsrfToken = data.csrfToken;
-      return window.ZyncNotifications.notificationCsrfToken;
-    } catch (error) {
-      console.error('Error fetching CSRF token for notifications:', error);
-      return null;
-    }
+  // Check if we're in a secure context
+  function isSecureContext() {
+    return window.isSecureContext || location.protocol === 'https:';
+  }
+
+  // Check if notifications are supported
+  function areNotificationsSupported() {
+    const hasNotificationAPI = 'Notification' in window;
+    const hasSecureContext = isSecureContext();
+
+    return hasNotificationAPI && hasSecureContext;
   }
 
   // Check if push notifications are supported
   function arePushNotificationsSupported() {
-    const isDevelopment = window.location.hostname === 'localhost' || 
-                         window.location.hostname === '127.0.0.1' || 
-                         window.location.hostname.includes('replit.dev') ||
-                         window.location.hostname.includes('repl.co') ||
-                         window.location.hostname.includes('replit.app') ||
-                         window.location.protocol === 'http:';
-
-    const hasServiceWorker = 'serviceWorker' in navigator;
-    const hasPushManager = 'PushManager' in window;
-    const hasSecureContext = window.isSecureContext || isDevelopment;
-
-
-
-    return hasServiceWorker && hasPushManager && hasSecureContext;
+    return 'PushManager' in window && 'serviceWorker' in navigator && areNotificationsSupported();
   }
 
-  // Check if basic notifications are supported
-  function areNotificationsSupported() {
-    const isDevelopment = window.location.hostname === 'localhost' || 
-                         window.location.hostname === '127.0.0.1' || 
-                         window.location.hostname.includes('replit.dev') ||
-                         window.location.hostname.includes('repl.co') ||
-                         window.location.hostname.includes('replit.app') ||
-                         window.location.protocol === 'http:';
+  // Fetch CSRF token
+  async function fetchCsrfToken() {
+    try {
+      const response = await fetch('/api/csrf-token', {
+        method: 'GET',
+        credentials: 'same-origin'
+      });
 
-    const hasNotificationAPI = 'Notification' in window;
-    const hasSecureContext = window.isSecureContext || isDevelopment;
-
-
-
-    // For Replit environment, use polling-based notifications if Notification API is missing
-    // This is normal behavior in some hosted environments
-    return hasNotificationAPI && hasSecureContext;
-  }
-
-  // Main function to initialize push notifications
-  function initializePushNotifications() {
-    if (window.ZyncNotifications.notificationSystemInitialized) {
-      return Promise.resolve(false);
-    }
-    window.ZyncNotifications.notificationSystemInitialized = true;
-
-    return fetchCsrfToken().then(() => {
-      if (!areNotificationsSupported()) {
-        setupNotificationPolling();
-        return false;
+      if (!response.ok) {
+        throw new Error('Failed to fetch CSRF token');
       }
 
-      if (Notification.permission === 'default') {
-        return Notification.requestPermission().then(permission => {
-          if (permission !== 'granted') {
-            setupNotificationPolling();
-            return false;
-          } else {
-            return registerServiceWorker();
-          }
-        });
-      } else if (Notification.permission === 'granted') {
-        return registerServiceWorker();
-      } else {
-        setupNotificationPolling();
-        return false;
-      }
-    }).catch(error => {
-      console.error('Push notification setup failed:', error);
-      setupNotificationPolling();
-      return false;
-    });
-  }
-
-  async function registerServiceWorker() {
-    if (arePushNotificationsSupported()) {
-      try {
-        const registration = await navigator.serviceWorker.register('/service-worker.js');
-
-        await navigator.serviceWorker.ready;
-
-        const response = await fetch('/api/push-key');
-        if (!response.ok) {
-          throw new Error(`Failed to fetch VAPID key: ${response.status}`);
-        }
-        const data = await response.json();
-        const vapidPublicKey = data.publicKey;
-
-        let currentSubscription = await registration.pushManager.getSubscription();
-
-        if (!currentSubscription) {
-          currentSubscription = await registration.pushManager.subscribe({
-            userVisibleOnly: true,
-            applicationServerKey: urlBase64ToUint8Array(vapidPublicKey)
-          });
-        }
-
-        const subscribeResponse = await fetch('/api/push-subscribe', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'CSRF-Token': window.ZyncNotifications.notificationCsrfToken
-          },
-          body: JSON.stringify({ subscription: currentSubscription })
-        });
-
-        if (!subscribeResponse.ok) {
-          const errorText = await subscribeResponse.text();
-          throw new Error(`Failed to send subscription to server: ${subscribeResponse.status} - ${errorText}`);
-        }
-
-        return true;
-      } catch (error) {
-        console.error('Service worker registration failed:', error);
-        setupNotificationPolling();
-        return false;
-      }
-    } else {
-      setupNotificationPolling();
-      return false;
+      const data = await response.json();
+      window.ZyncNotifications.csrfToken = data.csrfToken;
+      return data.csrfToken;
+    } catch (error) {
+      console.error('Error fetching CSRF token:', error);
+      throw error;
     }
   }
 
+  // Setup polling for notifications (fallback)
   function setupNotificationPolling() {
     if (window.ZyncNotifications.notificationPollingSetup) {
       return;
     }
     window.ZyncNotifications.notificationPollingSetup = true;
 
-    // Initialize comprehensive tracking system with better organization
-    if (!window.ZyncNotifications) {
-      window.ZyncNotifications = {};
-    }
-    if (!window.ZyncNotifications.acknowledgedWarnings) {
-      window.ZyncNotifications.acknowledgedWarnings = new Set();
-    }
+    console.log('Setting up notification polling as fallback');
 
-    // Initialize push notification function
-    window.initializePushNotifications = function() {
-      console.log('Push notification system initialized');
-      return true;
-    };
-    if (!window.ZyncNotifications.deliveredWarnings) {
-      window.ZyncNotifications.deliveredWarnings = new Set();
-    }
-    if (!window.ZyncNotifications.processedNotifications) {
-      window.ZyncNotifications.processedNotifications = new Set();
-    }
-    if (!window.ZyncNotifications.activeWarningModals) {
-      window.ZyncNotifications.activeWarningModals = new Set();
-    }
-    if (!window.ZyncNotifications.globalWarningTracker) {
-      window.ZyncNotifications.globalWarningTracker = new Set();
-    }
-
+    // Poll for notifications
     const pollingInterval = setInterval(async () => {
       if (!localStorage.getItem('userId')) return;
 
       try {
-        const response = await fetch('/api/pending-notifications');
-        if (!response.ok) throw new Error('Failed to fetch notifications');
-
-        const notifications = await response.json();
-
-        // Enhanced filtering with comprehensive deduplication
-        const newNotifications = notifications.filter(notification => {
-          if (notification.type === 'warning') {
-            // Extract and normalize warning ID comprehensively
-            let warningId = notification.id || 
-                           notification.data?.warningId || 
-                           notification.data?._id;
-
-            if (!warningId) {
-              console.warn('Warning notification missing ID, skipping:', notification);
-              return false;
-            }
-
-            // Comprehensive ID normalization - handle all possible formats
-            const originalWarningId = warningId;
-            if (typeof warningId === 'string') {
-              warningId = warningId.replace(/^(stored_|warning_)/, '');
-            }
-
-            // Create all possible ID variations for comprehensive checking
-            const idVariations = [
-              warningId,
-              `warning_${warningId}`,
-              `stored_${warningId}`,
-              originalWarningId
-            ];
-
-            // Check against all tracking systems with all ID variations
-            const isAlreadyProcessed = idVariations.some(id => 
-              window.ZyncNotifications.globalWarningTracker.has(id) ||
-              window.ZyncNotifications.acknowledgedWarnings.has(id) ||
-              window.ZyncNotifications.deliveredWarnings.has(id) ||
-              window.ZyncNotifications.activeWarningModals.has(id) ||
-              window.ZyncNotifications.processedNotifications.has(id) ||
-              window.ZyncNotifications.processedNotifications.has(`warning_${id}`)
-            );
-
-            if (isAlreadyProcessed) {
-              return false;
-            }
-
-            // Check if warning was already delivered via socket
-            if (notification.id.startsWith('stored_')) {
-              // This is a stored notification from polling
-              // Check if the same warning was already delivered via socket
-              const baseWarningId = warningId;
-              const socketDelivered = window.ZyncNotifications.socketDeliveredWarnings?.has(baseWarningId);
-
-              if (socketDelivered) {
-                // Mark as processed but don't display
-                idVariations.forEach(id => {
-                  window.ZyncNotifications.globalWarningTracker.add(id);
-                  window.ZyncNotifications.processedNotifications.add(id);
-                });
-                return false;
-              }
-            }
-
-            // Add ALL variations to prevent any future duplicates
-            idVariations.forEach(id => {
-              window.ZyncNotifications.globalWarningTracker.add(id);
-              window.ZyncNotifications.processedNotifications.add(id);
-            });
-
-            return true;
-          } else {
-            // Handle non-warning notifications
-            const notificationKey = `${notification.type}_${notification.id}`;
-            if (window.ZyncNotifications.processedNotifications.has(notificationKey)) {
-              return false;
-            }
-            window.ZyncNotifications.processedNotifications.add(notificationKey);
-            return true;
-          }
+        const response = await fetch('/api/pending-notifications', {
+          credentials: 'same-origin'
         });
 
-        if (newNotifications.length > 0) {
-          newNotifications.forEach(notification => {
+        if (response.ok) {
+          const notifications = await response.json();
+          // Enhanced filtering with comprehensive deduplication
+          const newNotifications = notifications.filter(notification => {
             if (notification.type === 'warning') {
-              // Normalize warning for consistent display
-              let warningId = notification.id || notification.data?.warningId || notification.data?._id;
+              // Extract and normalize warning ID comprehensively
+              let warningId = notification.id ||
+                notification.data?.warningId ||
+                notification.data?._id;
+
+              if (!warningId) {
+                console.warn('Warning notification missing ID, skipping:', notification);
+                return false;
+              }
+
+              // Comprehensive ID normalization - handle all possible formats
+              const originalWarningId = warningId;
               if (typeof warningId === 'string') {
                 warningId = warningId.replace(/^(stored_|warning_)/, '');
               }
 
-              // Mark in all tracking systems
-              window.ZyncNotifications.deliveredWarnings.add(warningId);
-              window.ZyncNotifications.processedNotifications.add(`warning_${warningId}`);
+              // Create all possible ID variations for comprehensive checking
+              const idVariations = [
+                warningId,
+                `warning_${warningId}`,
+                `stored_${warningId}`,
+                originalWarningId
+              ];
 
-              // Normalize warning data structure for consistent display
-              const normalizedWarning = {
-                id: warningId,
-                message: notification.message,
-                timestamp: notification.data?.timestamp || notification.createdAt,
-                type: 'warning',
-                data: {
-                  type: 'warning',
-                  warningId: warningId,
-                  timestamp: notification.data?.timestamp || notification.createdAt
+              // Check against all tracking systems with all ID variations
+              const isAlreadyProcessed = idVariations.some(id =>
+                window.ZyncNotifications.globalWarningTracker.has(id) ||
+                window.ZyncNotifications.acknowledgedWarnings.has(id) ||
+                window.ZyncNotifications.deliveredWarnings.has(id) ||
+                window.ZyncNotifications.activeWarningModals.has(id) ||
+                window.ZyncNotifications.processedNotifications.has(id) ||
+                window.ZyncNotifications.processedNotifications.has(`warning_${id}`)
+              );
+
+              if (isAlreadyProcessed) {
+                return false;
+              }
+
+              // Check if warning was already delivered via socket
+              if (notification.id.startsWith('stored_')) {
+                // This is a stored notification from polling
+                // Check if the same warning was already delivered via socket
+                const baseWarningId = warningId;
+                const socketDelivered = window.ZyncNotifications.socketDeliveredWarnings?.has(baseWarningId);
+
+                if (socketDelivered) {
+                  // Mark as processed but don't display
+                  idVariations.forEach(id => {
+                    window.ZyncNotifications.globalWarningTracker.add(id);
+                    window.ZyncNotifications.processedNotifications.add(id);
+                  });
+                  return false;
                 }
-              };
+              }
 
-              showWarningDetails(normalizedWarning);
+              // Add ALL variations to prevent any future duplicates
+              idVariations.forEach(id => {
+                window.ZyncNotifications.globalWarningTracker.add(id);
+                window.ZyncNotifications.processedNotifications.add(id);
+              });
+
+              return true;
             } else {
               // Handle non-warning notifications
               const notificationKey = `${notification.type}_${notification.id}`;
+              if (window.ZyncNotifications.processedNotifications.has(notificationKey)) {
+                return false;
+              }
               window.ZyncNotifications.processedNotifications.add(notificationKey);
-              showNotification(notification);
+              return true;
             }
           });
 
-          // Mark non-warning notifications as read on server
-          const nonWarningNotifications = newNotifications.filter(n => n.type !== 'warning');
-          if (nonWarningNotifications.length > 0) {
-            fetch('/api/mark-notifications-read', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'CSRF-Token': window.ZyncNotifications.notificationCsrfToken
+          if (newNotifications.length > 0) {
+            newNotifications.forEach(notification => {
+              if (notification.type === 'warning') {
+                // Normalize warning for consistent display
+                let warningId = notification.id || notification.data?.warningId || notification.data?._id;
+                if (typeof warningId === 'string') {
+                  warningId = warningId.replace(/^(stored_|warning_)/, '');
+                }
+
+                // Mark in all tracking systems
+                window.ZyncNotifications.deliveredWarnings.add(warningId);
+                window.ZyncNotifications.processedNotifications.add(`warning_${warningId}`);
+
+                // Normalize warning data structure for consistent display
+                const normalizedWarning = {
+                  id: warningId,
+                  message: notification.message,
+                  timestamp: notification.data?.timestamp || notification.createdAt,
+                  type: 'warning',
+                  data: {
+                    type: 'warning',
+                    warningId: warningId,
+                    timestamp: notification.data?.timestamp || notification.createdAt
+                  }
+                };
+
+                showWarningDetails(normalizedWarning);
+              } else {
+                // Handle non-warning notifications
+                const notificationKey = `${notification.type}_${notification.id}`;
+                window.ZyncNotifications.processedNotifications.add(notificationKey);
+                showNotification(notification);
               }
-            }).catch(err => console.warn('Failed to mark notifications as read:', err));
+            });
+
+            // Mark non-warning notifications as read on server
+            const nonWarningNotifications = newNotifications.filter(n => n.type !== 'warning');
+            if (nonWarningNotifications.length > 0) {
+              fetch('/api/mark-notifications-read', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'CSRF-Token': window.ZyncNotifications.csrfToken
+                },
+                credentials: 'same-origin',
+              }).catch(err => console.warn('Failed to mark notifications as read:', err));
+            }
+          }
+
+          // Clean up tracking sets periodically to prevent memory bloat
+          if (window.ZyncNotifications.globalWarningTracker.size > 200) {
+            const trackerArray = Array.from(window.ZyncNotifications.globalWarningTracker);
+            const keepTracking = trackerArray.slice(-100); // Keep last 100
+            window.ZyncNotifications.globalWarningTracker = new Set(keepTracking);
           }
         }
-
-        // Clean up tracking sets periodically to prevent memory bloat
-        if (window.ZyncNotifications.globalWarningTracker.size > 200) {
-          const trackerArray = Array.from(window.ZyncNotifications.globalWarningTracker);
-          const keepTracking = trackerArray.slice(-100); // Keep last 100
-          window.ZyncNotifications.globalWarningTracker = new Set(keepTracking);
-        }
       } catch (error) {
-        console.error('Error polling notifications:', error);
+        console.warn('Notification polling failed:', error);
       }
     }, window.ZyncNotifications.NOTIFICATION_POLLING_INTERVAL);
 
     window.addEventListener('beforeunload', () => {
       clearInterval(pollingInterval);
     });
+  }
+
+  // Show browser notification
+  function showBrowserNotification(title, message, icon = '/icons/icon-192x192.png') {
+    if ('Notification' in window && Notification.permission === 'granted') {
+      try {
+        new Notification(title, {
+          body: message,
+          icon: icon,
+          tag: 'zync-notification'
+        });
+      } catch (error) {
+        console.warn('Failed to show notification:', error);
+      }
+    }
+  }
+
+  // Register service worker
+  async function registerServiceWorker() {
+    if (!('serviceWorker' in navigator)) {
+      console.log('Service Worker not supported');
+      return false;
+    }
+
+    try {
+      const registration = await navigator.serviceWorker.register('/service-worker.js');
+      window.ZyncNotifications.serviceWorkerRegistration = registration;
+
+      await navigator.serviceWorker.ready;
+
+      if (arePushNotificationsSupported()) {
+        await setupPushSubscription(registration);
+      }
+
+      console.log('Service Worker registered successfully');
+      return true;
+    } catch (error) {
+      console.error('Service Worker registration failed:', error);
+      setupNotificationPolling();
+      return false;
+    }
+  }
+
+  // Setup push subscription
+  async function setupPushSubscription(registration) {
+    try {
+      // Get VAPID public key
+      const keyResponse = await fetch('/api/push-key');
+      if (!keyResponse.ok) {
+        throw new Error('Failed to get push key');
+      }
+
+      const { publicKey } = await keyResponse.json();
+
+      // Subscribe to push notifications
+      const subscription = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(publicKey)
+      });
+
+      // Send subscription to server
+      await fetch('/api/push-subscribe', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'CSRF-Token': window.ZyncNotifications.csrfToken
+        },
+        credentials: 'same-origin',
+        body: JSON.stringify({ subscription })
+      });
+
+      console.log('Push subscription successful');
+    } catch (error) {
+      console.error('Push subscription failed:', error);
+      setupNotificationPolling();
+    }
+  }
+
+  // Helper function to convert VAPID key
+  function urlBase64ToUint8Array(base64String) {
+    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+    const base64 = (base64String + padding)
+      .replace(/-/g, '+')
+      .replace(/_/g, '/');
+
+    const rawData = window.atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+
+    for (let i = 0; i < rawData.length; ++i) {
+      outputArray[i] = rawData.charCodeAt(i);
+    }
+    return outputArray;
   }
 
   function showNotification(notification) {
@@ -430,8 +410,8 @@ window.showCriticalWarning = function(message) {
     notificationEl.innerHTML = `
       <div class="notification-header">
         <div class="notification-profile-container">
-          ${profilePicture ? 
-            `<img src="${profilePicture}" alt="Profile Picture" class="notification-image">` : 
+          ${profilePicture ?
+            `<img src="${profilePicture}" alt="Profile Picture" class="notification-image">` :
             `<i class="fas fa-mask"></i>`}
         </div>
         <div class="notification-title-container">
@@ -474,8 +454,8 @@ window.showCriticalWarning = function(message) {
     });
 
     notificationEl.notification = {
-      title, message, profilePicture, 
-      data: notificationEl.dataset.notificationData ? 
+      title, message, profilePicture,
+      data: notificationEl.dataset.notificationData ?
         JSON.parse(notificationEl.dataset.notificationData) : {}
     };
 
@@ -644,7 +624,7 @@ window.showCriticalWarning = function(message) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'CSRF-Token': window.ZyncNotifications.notificationCsrfToken
+        'CSRF-Token': window.ZyncNotifications.csrfToken
       },
       body: JSON.stringify({ warningId: warningId })
     })
@@ -741,21 +721,6 @@ window.showCriticalWarning = function(message) {
     });
   }
 
-  function urlBase64ToUint8Array(base64String) {
-    const padding = '='.repeat((4 - base64String.length % 4) % 4);
-    const base64 = (base64String + padding)
-      .replace(/-/g, '+')
-      .replace(/_/g, '/');
-
-    const rawData = window.atob(base64);
-    const outputArray = new Uint8Array(rawData.length);
-
-    for (let i = 0; i < rawData.length; ++i) {
-      outputArray[i] = rawData.charCodeAt(i);
-    }
-    return outputArray;
-  }
-
   function showWarningDetails(warning) {
     // Enhanced warning ID extraction with comprehensive normalization
     let warningId = warning.id || warning.data?.warningId || warning.data?._id || warning._id;
@@ -770,7 +735,7 @@ window.showCriticalWarning = function(message) {
     }
 
     // Check if warning is already processed in any tracking system
-    const isAlreadyProcessed = 
+    const isAlreadyProcessed =
       window.ZyncNotifications.acknowledgedWarnings.has(warningId) ||
       window.ZyncNotifications.activeWarningModals.has(warningId) ||
       window.ZyncNotifications.globalWarningTracker.has(warningId);
@@ -799,9 +764,9 @@ window.showCriticalWarning = function(message) {
     });
 
     // Get the actual warning message with fallback
-    const warningMessage = warning.message || 
-                          (warning.data && warning.data.message) ||
-                          'You have received a warning from the Zync moderation team.';
+    const warningMessage = warning.message ||
+      (warning.data && warning.data.message) ||
+      'You have received a warning from the Zync moderation team.';
 
     // Create critical warning modal with enhanced unclosable behavior
     const warningModal = document.createElement('div');
@@ -1081,7 +1046,7 @@ window.showCriticalWarning = function(message) {
       if (areNotificationsSupported()) {
         Notification.requestPermission().then(permission => {
           if (permission === 'granted') {
-            initializePushNotifications();
+            registerServiceWorker().then(() => initializePushNotifications());
           } else {
             setupNotificationPolling();
           }
@@ -1095,9 +1060,8 @@ window.showCriticalWarning = function(message) {
     }, 500);
   }
 
-  // Export functions to global scope
-  window.ZyncNotifications.initializePushNotifications = initializePushNotifications;
-  window.ZyncNotifications.setupNotificationPolling = setupNotificationPolling;
+  // Expose the initialization function
+  window.ZyncNotifications.initialize = initializePushNotifications;
   window.ZyncNotifications.showNotification = showNotification;
   window.ZyncNotifications.displayNativeNotification = displayNativeNotification;
   window.ZyncNotifications.showVisualNotification = showVisualNotification;
@@ -1147,7 +1111,7 @@ window.showCriticalWarning = function(message) {
             ];
 
             // Check against all tracking systems with all ID variations
-            const isAlreadyProcessed = idVariations.some(id => 
+            const isAlreadyProcessed = idVariations.some(id =>
               window.ZyncNotifications.globalWarningTracker.has(id) ||
               window.ZyncNotifications.acknowledgedWarnings.has(id) ||
               window.ZyncNotifications.activeWarningModals.has(id) ||
@@ -1202,7 +1166,7 @@ window.showCriticalWarning = function(message) {
     }
   });
 
-  // Initialize when DOM is ready
+  // Auto-initialize when DOM is ready
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initializeNotificationSystem);
   } else {

@@ -637,9 +637,9 @@ const conditionalCSRF = (req, res, next) => {
     '/sitemap.xml',
     '/browserconfig.xml'
   ];
-  
+
   const skipMethods = ['GET', 'HEAD', 'OPTIONS'];
-  
+
   // Check if we should skip CSRF protection
   if (skipMethods.includes(req.method) || 
       skipPaths.some(path => req.path.startsWith(path)) ||
@@ -651,12 +651,12 @@ const conditionalCSRF = (req, res, next) => {
       req.path.endsWith('.mp3')) {
     return next();
   }
-  
+
   // Apply CSRF protection for POST/PUT/PATCH/DELETE requests to API endpoints
   if (req.path.startsWith('/api/') && !skipMethods.includes(req.method)) {
     return csrfProtection(req, res, next);
   }
-  
+
   next();
 };
 
@@ -866,8 +866,7 @@ app.post('/api/login', authLimiter, async (req, res) => {
 
           // Update user's IP in database with validation
           if (ip !== 'unknown') {
-            await User.findByIdAndUpdate(user._id, { 
-              ip: ip,
+            await User.findByIdAndUpdate(user._id, {               ip: ip,
               $push: { 
                 ipHistory: {
                   ip: ip,
@@ -2229,6 +2228,21 @@ io.on('connection', (socket) => {
       });
     }
   });
+
+    // Admin warning handler
+    socket.on('warning', (data) => {
+      try {
+        console.log('Received admin warning:', data);
+        if (data && data.message) {
+          // Send to frontend for display
+          if (typeof window !== 'undefined' && window.showAdminWarningModal) {
+            window.showAdminWarningModal(data.message, data.timestamp);
+          }
+        }
+      } catch (error) {
+        console.error('Error handling warning:', error);
+      }
+    });
 });
 
 // Push notification routes
@@ -3033,7 +3047,7 @@ async function startServer() {
   server.listen(PORT, HOST, () => {
     const isProduction = process.env.NODE_ENV === 'production';
     const renderUrl = process.env.RENDER_EXTERNAL_URL;
-    
+
     console.log(`Zync server running on ${HOST}:${PORT} (${process.env.NODE_ENV || 'development'} mode)`);
 
     if (isProduction || renderUrl) {

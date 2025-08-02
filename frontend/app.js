@@ -324,6 +324,19 @@ async function init() {
     
     // Add forgot password functionality
     setupForgotPassword();
+    
+    // Initialize push notifications
+    try {
+        if (typeof window !== 'undefined' && window.ZyncNotifications && typeof window.ZyncNotifications.initialize === 'function') {
+            await window.ZyncNotifications.initialize();
+            console.log("Push notifications initialized successfully");
+        } else {
+            console.log("Push notifications not available - using polling fallback");
+        }
+    } catch (error) {
+        console.warn("Push notification setup failed:", error);
+    }
+    
     // Fetch CSRF token first
     try {
         await fetchCSRFToken();
