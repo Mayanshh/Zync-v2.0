@@ -1,13 +1,36 @@
+
 services:
   - type: web
     name: zync-backend
     env: node
-    plan: starter
+    plan: free
     buildCommand: npm install
-    startCommand: npm start
+    startCommand: npm run render-start
+    healthCheckPath: /health
     envVars:
       - key: NODE_ENV
         value: production
       - key: PORT
         value: 10000
-    autoDeploy: true
+      - key: MONGODB_URI
+        sync: false
+      - key: SESSION_SECRET
+        sync: false
+      - key: VAPID_PUBLIC_KEY
+        sync: false
+      - key: VAPID_PRIVATE_KEY
+        sync: false
+      - key: VAPID_EMAIL
+        sync: false
+      - key: EMAIL_USER
+        sync: false
+      - key: EMAIL_PASS
+        sync: false
+      - key: ADMIN_USERNAME
+        sync: false
+      - key: ADMIN_PASSWORD_HASH
+        sync: false
+      - key: ADMIN_TOKEN_SECRET
+        sync: false
+      - key: FRONTEND_URL
+        sync: false

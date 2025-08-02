@@ -1,12 +1,16 @@
+
 {
   "name": "Zync-Backend",
   "version": "1.0.0",
   "description": "Backend for Zync - A social media profile exchange app",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
+    "start": "NODE_ENV=production node index.js",
     "dev": "nodemon index.js",
-    "production": "NODE_ENV=production node index.js"
+    "prod": "NODE_ENV=production node index.js",
+    "build": "echo 'No build step required for backend'",
+    "test": "echo 'No tests specified'",
+    "render-start": "node index.js"
   },
   "dependencies": {
     "bcrypt": "^5.1.1",

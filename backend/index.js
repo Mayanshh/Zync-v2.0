@@ -603,7 +603,7 @@ app.use(session({
   cookie: { 
     maxAge: 1000 * 60 * 60 * 24,
     httpOnly: true,
-    sameSite: 'lax',
+    sameSite: 'lax', // Changed to lax for better compatibility
     secure: process.env.NODE_ENV === 'production',
     path: '/'
   },
@@ -614,30 +614,28 @@ app.use(session({
 // Add cookie parser middleware (required for CSRF)
 app.use(cookieParser());
 
-// Add CSRF protection middleware - disable for production to avoid token issues
+// Add CSRF protection middleware
 const csrf = require('csurf');
+const csrfProtection = csrf({ 
+  cookie: {
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax'
+  }
+});
 
-// Disable CSRF in production environments to prevent token errors
-const shouldUseCsrf = false; // Disabled for production stability
-
-let csrfProtection;
-if (shouldUseCsrf) {
-  csrfProtection = csrf({ 
-    cookie: {
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax'
-    }
-  });
-} else {
-  // Mock CSRF protection - always use for stability
-  csrfProtection = (req, res, next) => {
-    req.csrfToken = () => 'mock-token';
+// Apply CSRF protection selectively
+app.use((req, res, next) => {
+  if (req.path === '/api/csrf-token' || req.method === 'GET' || process.env.NODE_ENV !== 'production') {
     next();
-  };
-}
+  } else {
+    csrfProtection(req, res, next);
+  }
+});
 
-// Apply mock CSRF protection
-app.use(csrfProtection);
+// Expose CSRF token to frontend
+app.get('/api/csrf-token', csrfProtection, (req, res) => {
+  res.json({ csrfToken: req.csrfToken() });
+});
 
 // Content security policy
 app.use(
@@ -861,8 +859,6 @@ app.post('/api/login', authLimiter, async (req, res) => {
         } catch (error) {
           reject(error);
         }
-```text
-
       });
     }).catch(error => {
       console.error('Session regeneration error:', error);
@@ -1949,8 +1945,7 @@ app.use((err, req, res, next) => {
   }
 
   if (err.code === 'EBADCSRFTOKEN') {
-    // Skip CSRF errors since we disabled CSRF protection
-    return next();
+    return res.status(403).json({ error: 'Invalid CSRF token' });
   }
 
   res.status(500).json({ error: 'Internal Server Error', message: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong' });
@@ -2951,7 +2946,7 @@ app.get('/api/admin/recent-users', adminAuth, async (req, res) => {
         profilePicture: user.profilePicture,
         createdAt: user.createdAt,
         status: isOnline ? 'Online' : 'Offline',
-        lastActive: lastActive.toISOString()
+        lastActive: lastActive ? lastActive.toISOString() : null
       };
     });
 
@@ -3007,7 +3002,7 @@ async function startServer() {
   server.listen(PORT, HOST, () => {
     const isProduction = process.env.NODE_ENV === 'production';
     const renderUrl = process.env.RENDER_EXTERNAL_URL;
-
+    
     console.log(`Zync server running on ${HOST}:${PORT} (${process.env.NODE_ENV || 'development'} mode)`);
 
     if (isProduction || renderUrl) {
