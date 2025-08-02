@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <!-- Primary Meta Tags -->
+    <title>Zync - Tap. Share. Zync.</title>
+    <meta name="title" content="Zync - Tap. Share. Zync.">
+    <meta name="description" content="Your Socials. One Tap. Infinite Connections. Connect with nearby users and share your social media profiles instantly with Zync.">
+    <meta name="keywords" content="social media, networking, connect, nearby users, share profiles, instant connection, zync, social sharing">
+    <meta name="author" content="Zync Team">
+    <meta name="robots" content="index, follow">
+    <meta name="language" content="English">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://zync-app.com/">
+    <meta property="og:title" content="Zync - Tap. Share. Zync.">
+    <meta property="og:description" content="Your Socials. One Tap. Infinite Connections. Connect with nearby users and share your social media profiles instantly.">
+    <meta property="og:image" content="/icons/icon-512x512.png">
+    <meta property="og:image:width" content="512">
+    <meta property="og:image:height" content="512">
+    <meta property="og:site_name" content="Zync">
+    <meta property="og:locale" content="en_US">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://zync-app.com/">
+    <meta property="twitter:title" content="Zync - Tap. Share. Zync.">
+    <meta property="twitter:description" content="Your Socials. One Tap. Infinite Connections. Connect with nearby users and share your social media profiles instantly.">
+    <meta property="twitter:image" content="/icons/icon-512x512.png">
+    <meta property="twitter:creator" content="@ZyncApp">
+    <meta property="twitter:site" content="@ZyncApp">
+
+    <!-- Favicons -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192x192.png">
+
+    <!-- Apple Touch Icons -->
+    <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
+    <link rel="apple-touch-icon" sizes="192x192" href="/icons/icon-192x192.png">
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json">
+
+    <!-- PWA Meta Tags -->
+    <meta name="application-name" content="Zync">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Zync">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="msapplication-config" content="/browserconfig.xml">
+    <meta name="msapplication-TileColor" content="#6366f1">
+    <meta name="msapplication-tap-highlight" content="no">
+    <meta name="theme-color" content="#6366f1">
+
+    <!-- Security Headers -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+
+    <!-- Preconnect to external resources -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+
+    <!-- DNS Prefetch -->
+    <link rel="dns-prefetch" href="//fonts.googleapis.com">
+    <link rel="dns-prefetch" href="//cdnjs.cloudflare.com">
+
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="stylesheets/notifications.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <!-- Structured Data for SEO -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Zync",
+        "description": "Your Socials. One Tap. Infinite Connections. Connect with nearby users and share your social media profiles instantly with Zync.",
+        "url": "https://zync-app.com/",
+        "applicationCategory": "SocialNetworkingApplication",
+        "operatingSystem": "All",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+        },
+        "author": {
+            "@type": "Organization",
+            "name": "Zync Team"
+        },
+        "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": "4.8",
+            "reviewCount": "1000"
+        },
+        "featureList": [
+            "Location-based networking",
+            "Real-time messaging",
+            "Anonymous interactions",
+            "Social profile sharing",
+            "End-to-end encryption"
+        ]
+    }
+    </script>
+
+    <script>
+        // Load Socket.IO with better error handling
+        function loadSocketIO() {
+            return new Promise((resolve, reject) => {
+                if (typeof io !== 'undefined') {
+                    resolve();
+                    return;
+                }
+
+                const script = document.createElement('script');
+                script.src = '/socket.io/socket.io.js';
+                script.onload = () => {
+                    if (typeof io !== 'undefined') {
+                        console.log('Socket.IO loaded successfully');
+                        resolve();
+                    } else {
+                        console.warn('Socket.IO script loaded but io object not available');
+                        reject(new Error('Socket.IO object not available'));
+                    }
+                };
+                script.onerror = () => {
+                    console.error('Socket.IO script failed to load');
+                    reject(new Error('Socket.IO script failed to load'));
+                };
+                document.head.appendChild(script);
+            });
+        }
+
+        // Try to load Socket.IO immediately
+        loadSocketIO().catch(() => {
+            console.warn('Socket.IO failed to load, will retry later');
+        });
+    </script>
+</head>
+<body>
+    <!-- Auth Page -->
+    <div id="auth-page" class="page">
+        <div class="auth-container">
+            <div class="logo">
+
+<i class="fas fa-bolt"></i>
+                <h1>Zync</h1>
+                <p class="tagline">Tap. Share. Zync.</p>
+                <p class="sub-tagline">Your Socials. One Tap. Infinite Connections.</p>
+            </div>
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="login">Login</button>
+                <button class="tab-btn" data-tab="register">Register</button>
+            </div>
+            <div id="login-form" class="form-container active">
+    <div class="subtle-admin-trigger" title="Login">
+        <i class="fas fa-circle"></i>
+    </div>
+                <div class="input-group">
+                    <i class="fas fa-user input-icon"></i>
+                    <input type="text" id="login-username" placeholder="Username">
+                </div>
+                <div class="input-group">
+                    <i class="fas fa-lock input-icon"></i>
+                    <input type="password" id="login-password" placeholder="Password">
+                </div>
+                <button id="login-btn" class="primary-btn">
+                    <span>Login</span>
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+                <div class="forgot-password-link">
+                    <a href="#" id="forgot-password-link">Forgot Password?</a>
+                </div>
+            </div>
+            <div id="register-form" class="form-container">
+                <div class="input-group">
+                    <i class="fas fa-user input-icon"></i>
+                    <input type="text" id="register-username" placeholder="Username" required>
+                </div>
+                <div class="input-group">
+                    <i class="fas fa-id-card input-icon"></i>
+                    <input type="text" id="register-fullname" placeholder="Full Name" required>
+                </div>
+                <div class="input-group">
+                    <i class="fas fa-envelope input-icon"></i>
+                    <input type="email" id="register-email" placeholder="Email Address" required>
+                </div>
+                <div class="input-group">
+                    <i class="fas fa-lock input-icon"></i>
+                    <input type="password" id="register-password" placeholder="Password" required>
+                </div>
+                <div class="input-group">
+                    <i class="fas fa-check-circle input-icon"></i>
+                    <input type="password" id="register-confirm-password" placeholder="Confirm Password" required>
+                </div>
+                <button id="register-btn" class="primary-btn">
+                    <span>Create Account</span>
+                    <i class="fas fa-user-plus"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div id="main-app" class="page hidden">
+        <!-- Top Navigation -->
+        <div class="navigation-container">
+            <nav class="top-nav">
+                <button class="nav-btn active" data-page="nearby-page">
+                    <i class="fas fa-location-dot"></i>
+                    <span>Nearby</span>
+                </button>
+                <button class="nav-btn" data-page="posts-page">
+                    <i class="fas fa-newspaper"></i>
+                    <span>Posts</span>
+                </button>
+                <button class="nav-btn" data-page="search-page">
+                    <i class="fas fa-search"></i>
+                    <span>Search</span>
+                </button>
+                <button class="nav-btn" data-page="messages-page">
+                    <i class="fas fa-message"></i>
+                    <span>Messages</span>
+                </button>
+                <button class="nav-btn" data-page="profile-page">
+                    <i class="fas fa-user"></i>
+                    <span>Profile</span>
+                </button>
+            </nav>
+        </div>
+
+        <!-- Content Pages -->
+        <div class="content-pages">
+            <!-- Nearby Page -->
+            <div id="nearby-page" class="content-page active">
+                <div class="page-header">
+                    <h2>Nearby Users</h2>
+                    <div class="location-status">
+                        <span id="location-status-text">Location: Inactive</span>
+                        <button id="refresh-location-btn" class="icon-btn">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
+                </div>
+                <div id="nearby-users-list" class="users-list">
+                    <!-- Nearby users will be populated here -->
+                </div>
+            </div>
+
+            <!-- Posts Page -->
+            <div id="posts-page" class="content-page">
+                <div class="page-header">
+                    <h2>Posts</h2>
+                </div>
+                <div class="new-post-container">
+                    <textarea id="new-post-content" placeholder="What's on your mind?"></textarea>
+                    <div id="post-image-preview" class="post-preview hidden"></div>
+                    <div class="post-actions">
+                        <label for="post-image-upload" class="icon-btn">
+                            <i class="fas fa-image"></i>
+                        </label>
+                        <input type="file" id="post-image-upload" accept="image/*" hidden>
+                        <button id="submit-post-btn" class="primary-btn">Post</button>
+                    </div>
+                </div>
+                <div id="posts-list" class="posts-container">
+                    <!-- Posts will be populated here -->
+                </div>
+            </div>
+
+            <!-- Messages Page -->
+            <div id="messages-page" class="content-page">
+                <div class="messages-header">
+                    <div class="messages-title-bar">
+                        <h2>Messages</h2>
+                        <button class="new-message-btn">
+                            <i class="fas fa-plus"></i>
+                            <span>New Chat</span>
+                        </button>
+                    </div>
+                    <div class="messages-search">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="messages-search-input" placeholder="Search conversations...">
+                        <button class="clear-search hidden" aria-label="Clear search">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+                <div id="conversations-list" class="conversations-list" style="opacity: 1; visibility: visible;">
+                    <!-- Conversations will be populated here -->
+                    <!-- Empty state will be shown when no conversations -->
+                    <div class="loading-indicator" style="text-align: center; padding: 20px;">
+                        <i class="fas fa-circle-notch fa-spin" style="font-size: 24px; color: var(--primary-color);"></i>
+                        <p>Loading conversations...</p>
+                    </div>
+                </div>
+                <div id="chat-interface" class="chat-interface hidden" style="opacity: 1; visibility: visible;">
+                    <div class="chat-header">
+                        <button id="back-to-messages-btn" class="icon-btn">
+                            <i class="fas fa-arrow-left"></i>
+                        </button>
+                        <div class="user-picture">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="chat-header-info">
+                            <h3 id="chat-user-name">User Name</h3>
+                            <div class="chat-header-subtitle">
+                                <span class="user-active-status">
+                                    <i class="fas fa-circle"></i>
+                                    Active now
+                                </span>
+                            </div>
+                        </div>
+                        <div class="chat-header-actions">
+                            <button class="chat-header-action audio-call" title="Audio Call">
+                                <i class="fas fa-phone-alt"></i>
+                            </button>
+                            <button class="chat-header-action video-call" title="Video Call">
+                                <i class="fas fa-video"></i>
+                            </button>
+                            <button id="view-profile-btn" class="chat-header-action" title="View Profile">
+                                <i class="fas fa-user-circle"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div id="chat-messages" class="chat-messages">
+                        <!-- Messages will be populated here -->
+                        <!-- Empty state for no messages -->
+                        <div class="no-messages">
+                            <div class="no-messages-icon">
+                                <i class="fas fa-comments"></i>
+                            </div>
+                            <h3 class="no-messages-title">No messages yet</h3>
+                            <p class="no-messages-subtitle">Send the first message to start a conversation!</p>
+                            <button class="no-messages-btn">
+                                <i class="fas fa-smile"></i>
+                                Say Hi!
+                            </button>
+                        </div>
+                    </div>
+                    <div class="chat-input-container">
+                        <div class="chat-actions">
+                            <button class="chat-action-btn" title="Attach files">
+                                <i class="fas fa-paperclip"></i>
+                            </button>
+                            <button class="chat-action-btn" title="Record audio">
+                                <i class="fas fa-microphone"></i>
+                            </button>
+                        </div>
+                        <div class="chat-input-wrapper">
+                            <input type="text" id="chat-message-input" placeholder="Type a message...">
+                            <button class="emoji-trigger" title="Add emoji">
+                                <i class="fas fa-smile"></i>
+                            </button>
+                            <button id="send-message-btn" title="Send message">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search Page -->
+            <div id="search-page" class="content-page">
+                <div class="page-header">
+                    <h2>Search Users</h2>
+                </div>
+                <div class="search-section">
+                    <div class="search-bar-container">
+                        <div class="search-bar">
+                            <i class="fas fa-search search-icon"></i>
+                            <input type="text" id="user-search" placeholder="Search for users by name or username...">
+                            <button id="clear-search" class="clear-search hidden">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div id="search-results" class="search-results hidden"></div>
+                    </div>
+                    <div class="search-tips">
+                        <p><i class="fas fa-info-circle"></i> Type at least 2 characters to start searching</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile Page -->
+            <div id="profile-page" class="content-page">
+                <div class="page-header">
+                    <h2>Profile</h2>
+                    <div class="profile-toggle-buttons">
+                        <div class="profile-menu-dropdown">
+                            <button id="profile-menu-toggle" class="profile-menu-toggle" title="More options">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                            <div class="profile-menu-content" id="profile-menu-content">
+                                <a href="about.html" target="_blank" class="profile-menu-item">
+                                    <i class="fas fa-info-circle"></i>
+                                    <span>About Zync</span>
+                                </a>
+                                <a href="terms.html" target="_blank" class="profile-menu-item">
+                                    <i class="fas fa-file-contract"></i>
+                                    <span>Terms of Service</span>
+                                </a>
+                            </div>
+                        </div>
+                        <button id="dark-mode-toggle" class="dark-mode-toggle" title="Toggle dark/light mode">
+                            <i class="fas fa-moon"></i>
+                        </button>
+                        <button id="anonymous-mode-toggle" class="anonymous-mode-toggle" title="Toggle anonymous mode">
+                            <i class="fas fa-mask"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="profile-container">
+                    <div class="profile-header">
+                        <div id="profile-picture" class="profile-picture">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <label for="profile-picture-upload" class="edit-picture-btn" title="Upload and crop profile picture">
+                            <i class="fas fa-camera"></i>
+                        </label>
+                        <input type="file" id="profile-picture-upload" accept="image/*" hidden>
+                        <h3 id="profile-name" contenteditable="true">Your Name</h3>
+                        <p id="profile-username">@username</p>
+                        <div id="anonymous-status" class="anonymous-status">
+                            <span class="anonymous-badge hidden">Anonymous Mode</span>
+                        </div>
+                    </div>
+                    <div class="profile-section">
+                        <h4>Bio</h4>
+                        <textarea id="profile-bio-text" placeholder="Write something about yourself..."></textarea>
+                    </div>
+                    <div class="profile-section">
+                        <h4>Your Interests & Vibes</h4>
+                        <div class="interests-container">
+                            <div class="interests-grid">
+                                <div class="interest-item">
+                                    <div class="interest-header">
+                                        <i class="fas fa-heart-circle-bolt"></i>
+                                        <h5>Hobbies & Passions</h5>
+                                    </div>
+                                    <div class="interest-tags-container">
+                                        <div class="interest-tags-input">
+                                            <input type="text" id="hobby-tag-input" placeholder="Add a hobby...">
+                                            <button id="add-hobby-btn" class="tag-add-btn"><i class="fas fa-plus"></i></button>
+                                        </div>
+                                        <div id="hobby-tags" class="interest-tags"></div>
+                                    </div>
+                                </div>
+                                <div class="interest-item">
+                                    <div class="interest-header">
+                                        <i class="fas fa-music"></i>
+                                        <h5>Top Tracks</h5>
+                                    </div>
+                                    <div class="top-songs">
+                                        <div class="song-input">
+                                            <i class="fas fa-music-alt"></i>
+                                            <input type="text" id="song-1" placeholder="Favorite song #1">
+                                        </div>
+                                        <div class="song-input">
+                                            <i class="fas fa-music-alt"></i>
+                                            <input type="text" id="song-2" placeholder="Favorite song #2">
+                                        </div>
+                                        <div class="song-input">
+                                            <i class="fas fa-music-alt"></i>
+                                            <input type="text" id="song-3" placeholder="Favorite song #3">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="interest-item full-width">
+                                    <div class="interest-header">
+                                        <i class="fas fa-lightbulb"></i>
+                                        <h5>About Me</h5>
+                                    </div>
+                                    <textarea id="about-me-text" placeholder="Share something unique about yourself..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="profile-section">
+                        <h4>Social Media Profiles</h4>
+                        <div class="social-profiles">
+                            <div class="social-input">
+                                <i class="fab fa-instagram"></i>
+                                <input type="text" id="instagram-profile" placeholder="Instagram Username">
+                            </div>
+                            <div class="social-input">
+                                <i class="fab fa-facebook"></i>
+                                <input type="text" id="facebook-profile" placeholder="Facebook Profile">
+                            </div>
+                            <div class="social-input">
+                                <i class="fab fa-twitter"></i>
+                                <input type="text" id="twitter-profile" placeholder="Twitter Username">
+                            </div>
+                            <div class="social-input">
+                                <i class="fab fa-linkedin"></i>
+                                <input type="text" id="linkedin-profile" placeholder="LinkedIn Username">
+                            </div>
+                            <div class="social-input">
+                                <i class="fab fa-snapchat"></i>
+                                <input type="text" id="snapchat-profile" placeholder="Snapchat Username">
+                            </div>
+                            <div class="social-input">
+                                <i class="fab fa-spotify"></i>
+                                <input type="text" id="spotify-profile" placeholder="Spotify Username">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="profile-actions">
+                        <button id="save-profile-btn" class="primary-btn">Save Profile</button>
+                        <button id="logout-btn" class="secondary-btn">Logout</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div id="request-modal" class="modal hidden">
+        <div class="modal-content request-modal-content">
+            <div class="request-header">
+                <i class="fas fa-user-plus request-icon"></i>
+                <h3>Connection Request</h3>
+            </div>
+            <div class="request-user-info">
+                <div id="request-user-picture" class="request-picture">
+                    <i class="fas fa-user"></i>
+                </div>
+                <p id="request-text">Someone wants to connect with you!</p>
+            </div>
+            <div class="request-status" id="request-status">
+                <div class="request-loader hidden">
+                    <i class="fas fa-circle-notch fa-spin"></i>
+                    <span>Processing...</span>
+                </div>
+            </div>
+            <div class="modal-actions request-actions">
+                <button id="accept-request-btn" class="primary-btn"><i class="fas fa-check"></i> Accept</button>
+                <button id="reject-request-btn" class="secondary-btn"><i class="fas fa-times"></i> Decline</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="user-profile-modal" class="modal hidden">
+        <div class="modal-content">
+            <button id="close-profile-modal-btn" class="close-btn" title="Close profile">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="modal-profile-header">
+                <button id="back-to-screen-btn" class="back-to-screen-btn" title="Back to previous screen">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <div id="modal-profile-picture" class="profile-picture">
+                    <i class="fas fa-user"></i>
+                </div>
+                <h3 id="modal-profile-name">User Name</h3>
+                <p id="modal-profile-username">@username</p>
+            </div>
+            <div class="modal-section">
+                <h4><i class="fas fa-info-circle"></i> Bio</h4>
+                <p id="modal-profile-bio">No bio available</p>
+            </div>
+            <div class="modal-section">
+                <h4><i class="fas fa-heart-circle-bolt"></i> Interests & Vibes</h4>
+                <div id="modal-interests" class="modal-interests">
+                    <!-- Interests will be populated here -->
+                    <div class="modal-interests-empty">Waiting to learn about their interests...</div>
+                </div>
+            </div>
+            <div class="modal-section">
+                <h4><i class="fas fa-music"></i> Top Tracks</h4>
+                <div id="modal-songs" class="modal-songs">
+                    <!-- Songs will be populated here -->
+                    <div class="modal-songs-empty">No favorite tracks shared yet</div>
+                </div>
+            </div>
+            <div class="modal-section">
+                <h4><i class="fas fa-share-alt"></i> Social Media Profiles</h4>
+                <div id="modal-social-profiles">
+                    <!-- Social media profiles will be populated here -->
+                </div>
+            </div>
+            <div class="modal-section">
+                <h4><i class="fas fa-newspaper"></i> Posts</h4>
+                <div id="modal-user-posts" class="modal-posts-container">
+                    <!-- User posts will be populated here -->
+                    <div class="modal-posts-loading">
+                        <i class="fas fa-circle-notch fa-spin"></i>
+                        <p>Loading posts...</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button id="connect-btn" class="primary-btn">Connect</button>
+                <button id="message-btn" class="secondary-btn hidden">Message</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Forgot Password Modal -->
+    <div id="forgot-password-modal" class="modal hidden">
+        <div class="modal-content">
+            <button class="close-btn" id="close-forgot-password-modal">
+                <i class="fas fa-times"></i>
+            </button>
+            <h3><i class="fas fa-key"></i> Reset Password</h3>
+            <p>Enter your email address and we'll send you a link to reset your password.</p>
+            <div class="forgot-password-form">
+                <div class="input-group">
+                    <i class="fas fa-envelope input-icon"></i>
+                    <input type="email" id="forgot-email" placeholder="Enter your email address" required>
+                </div>
+                <button id="send-reset-btn" class="primary-btn">
+                    <span>Send Reset Link</span>
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+            <div id="forgot-password-message" class="forgot-password-message hidden"></div>
+        </div>
+    </div>
+
+    <!-- Admin Login Modal (Hidden by default) -->
+    <div id="admin-login-modal" class="modal hidden">
+        <div class="modal-content">
+            <h3><i class="fas fa-shield-alt"></i> Admin Login</h3>
+            <div class="admin-login-form">
+                <div class="input-group">
+                    <i class="fas fa-user input-icon"></i>
+                    <input type="text" id="admin-username" placeholder="Admin Username">
+                </div>
+                <div class="input-group">
+                    <i class="fas fa-lock input-icon"></i>
+                    <input type="password" id="admin-password" placeholder="Admin Password">
+                </div>
+                <button id="admin-login-btn" class="primary-btn">
+                    <span>Admin Login</span>
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+  <!-- Load required libraries in correct order -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+
+
+    <!-- Socket.IO loading with defer attribute -->
+    <script src="/socket.io/socket.io.js" defer></script>
+
+    <!-- Application scripts -->
+    <script src="config.js"></script>
+    <script src="push-notifications.js"></script>
+    <script src="app.js"></script>
+
+    <script>
+        window.addEventListener('load', function() {
+            // Wait a moment for all scripts to load
+            setTimeout(() => {
+                // Check if Socket.IO is loaded
+                if (typeof io === 'undefined') {
+                    console.log('Socket.IO not immediately available, attempting to load...');
+                    // Try using the loading function
+                    if (typeof loadSocketIO === 'function') {
+                        loadSocketIO()
+                            .then(() => {
+                                console.log('Socket.IO loaded successfully');
+                                if (typeof initializePushNotifications === 'function') {
+                                    initializePushNotifications();
+                                }
+                            })
+                            .catch(() => {
+                                console.warn('Socket.IO failed to load, using fallback');
+                                if (typeof setupNotificationPolling === 'function') {
+                                    setupNotificationPolling();
+                                }
+                            });
+                    } else {
+                        console.warn('Socket.IO loading function not available');
+                        if (typeof setupNotificationPolling === 'function') {
+                            setupNotificationPolling();
+                        }
+                    }
+                } else {
+                    console.log('Socket.IO loaded successfully');
+                    if (typeof initializePushNotifications === 'function') {
+                        initializePushNotifications();
+                    } else {
+                        console.warn("Push notification initialization function not found");
+                        if (typeof setupNotificationPolling === 'function') {
+                            setupNotificationPolling();
+                        }
+                    }
+                }
+            }, 100);
+        });
+    </script>
+</body>
+</html>

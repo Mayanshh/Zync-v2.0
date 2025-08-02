@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Zync - Privacy-First Social Connection Platform | Secure Networking App</title>
+    <meta name="description" content="Learn about Zync's mission to create meaningful connections through location-based networking, end-to-end encryption, and privacy-first design. Connect safely with nearby users.">
+    <meta name="keywords" content="about zync, social networking, privacy, security, location-based, end-to-end encryption, nearby users, social connection platform">
+    <meta name="robots" content="index, follow">
+    <meta name="author" content="Zync Team">
+    <link rel="canonical" href="https://zync-app.com/about.html">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="About Zync - Privacy-First Social Connection Platform">
+    <meta property="og:description" content="Learn about Zync's mission to create meaningful connections through location-based networking and privacy-first design.">
+    <meta property="og:url" content="https://zync-app.com/about.html">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="https://zync-app.com/icons/icon-512x512.png">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="About Zync - Privacy-First Social Connection Platform">
+    <meta name="twitter:description" content="Learn about Zync's mission to create meaningful connections through location-based networking and privacy-first design.">
+    <meta name="twitter:image" content="https://zync-app.com/icons/icon-512x512.png">
+
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "AboutPage",
+        "name": "About Zync",
+        "description": "Learn about Zync's mission to create meaningful connections through location-based networking, end-to-end encryption, and privacy-first design.",
+        "url": "https://zync-app.com/about.html",
+        "mainEntity": {
+            "@type": "Organization",
+            "name": "Zync",
+            "description": "Privacy-first social connection platform",
+            "url": "https://zync-app.com"
+        }
+    }
+    </script>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card h3 {
+            color: #764ba2;
+            margin-bottom: 15px;
+            margin-top: 25px;
+            font-size: 1.3rem;
+        }
+
+        .card p, .card li {
+            margin-bottom: 10px;
+            color: #555;
+        }
+
+        .card ul {
+            margin-left: 20px;
+        }
+
+        .developer-card {
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+            color: white;
+            text-align: center;
+        }
+
+        .developer-card h2 {
+            color: white;
+        }
+
+        .developer-avatar {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            background: rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .social-links a {
+            color: white;
+            font-size: 1.5rem;
+            transition: transform 0.3s ease;
+        }
+
+        .social-links a:hover {
+            transform: scale(1.2);
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .feature-item {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .feature-item i {
+            font-size: 2rem;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .back-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: white;
+            color: #667eea;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 500;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .container {
+                padding: 10px;
+            }
+
+            .card {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="/" class="back-btn">
+        <i class="fas fa-arrow-left"></i> Back to App
+    </a>
+
+    <div class="container">
+        <div class="header">
+            <h1>About Zync</h1>
+            <p>Connecting people, building communities, fostering relationships</p>
+        </div>
+
+        <div class="content-grid">
+            <div class="card">
+                <h2><i class="fas fa-bullseye"></i> Our Purpose</h2>
+                <p>Zync is a revolutionary social networking platform designed to bridge the gap between digital connections and real-world relationships. We believe that meaningful connections shouldn't be limited by physical boundaries or social barriers.</p>
+
+                <h3>Why Zync?</h3>
+                <p>In today's fast-paced world, people struggle to form genuine connections. Traditional social media often feels impersonal and overwhelming. Zync addresses this by:</p>
+                <ul>
+                    <li>Providing location-based networking for real-world meetups</li>
+                    <li>Offering anonymous interaction options for comfort and safety</li>
+                    <li>Creating a verification system to build trust</li>
+                    <li>Focusing on quality connections over quantity</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h2><i class="fas fa-rocket"></i> Key Features</h2>
+                <div class="feature-grid">
+                    <div class="feature-item">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <h4>Location-Based Networking</h4>
+                        <p>Find and connect with people nearby</p>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-user-secret"></i>
+                        <h4>Anonymous Mode</h4>
+                        <p>Interact safely with privacy protection</p>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-check-circle"></i>
+                        <h4>Profile Verification</h4>
+                        <p>Build trust with verified accounts</p>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-comments"></i>
+                        <h4>Real-time Messaging</h4>
+                        <p>Instant communication with advanced features</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2><i class="fas fa-users"></i> Target Audience</h2>
+                <h3>Students & Teenagers</h3>
+                <p>Perfect for socializing, finding study groups, and building friendships in educational environments.</p>
+
+                <h3>Professionals & Businesses</h3>
+                <p>Ideal for networking, collaborations, and professional relationship building.</p>
+
+                <h3>General Public</h3>
+                <p>Anyone looking to connect with like-minded individuals and expand their social circle.</p>
+            </div>
+
+            <div class="card">
+                <h2><i class="fas fa-cogs"></i> How It Works</h2>
+                <p>Zync uses cutting-edge technology to create seamless connections:</p>
+                <ul>
+                    <li><strong>Smart Matching:</strong> Our algorithm connects you with compatible people based on location, interests, and preferences</li>
+                    <li><strong>Privacy First:</strong> Advanced privacy controls including anonymous mode and secure data handling</li>
+                    <li><strong>Real-time Communication:</strong> Instant messaging with WebSocket technology for smooth conversations</li>
+                    <li><strong>Community Moderation:</strong> Robust moderation system to maintain a safe and positive environment</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h2><i class="fas fa-shield-alt"></i> Privacy & Data Protection</h2>
+                <p>Your privacy is our top priority. Zync is built with privacy-first architecture:</p>
+
+                <div class="feature-grid">
+                    <div class="feature-item">
+                        <i class="fas fa-user-shield"></i>
+                        <h4>Zero Third-Party Sharing</h4>
+                        <p>We never share your data with any third-party apps or companies</p>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-eye-slash"></i>
+                        <h4>Private Conversations</h4>
+                        <p>Even we can't see your chats - they're completely private</p>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-database"></i>
+                        <h4>Minimal Data Storage</h4>
+                        <p>We don't store your personal data unnecessarily</p>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-lock"></i>
+                        <h4>End-to-End Encryption</h4>
+                        <p>All communications are encrypted and secure</p>
+                    </div>
+                </div>
+
+                <h3>Our Privacy Promise</h3>
+                <ul>
+                    <li>Your data stays yours - no third-party access</li>
+                    <li>Private messages remain completely confidential</li>
+                    <li>Minimal data collection with maximum security</li>
+                    <li>Transparent privacy practices with no hidden agendas</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h2><i class="fas fa-lock"></i> Safety & Security</h2>
+                <p>Your safety and security are fundamental to our platform. Zync implements:</p>
+                <ul>
+                    <li>Advanced spam and abuse detection systems</li>
+                    <li>Comprehensive user reporting and moderation</li>
+                    <li>Anonymous interaction options for safety</li>
+                    <li>Granular location privacy controls</li>
+                    <li>Regular security audits and updates</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h2><i class="fas fa-globe"></i> Our Vision</h2>
+                <p>We envision a world where meaningful connections are easily accessible to everyone, regardless of their location, background, or social status. Zync aims to:</p>
+                <ul>
+                    <li>Reduce social isolation and loneliness</li>
+                    <li>Foster genuine human connections</li>
+                    <li>Create opportunities for personal and professional growth</li>
+                    <li>Build stronger, more connected communities</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="developer-card card">
+            <h2><i class="fas fa-code"></i> Meet the Developer</h2>
+            <div class="developer-avatar">
+                <i class="fas fa-user-tie"></i>
+            </div>
+            <h3>Mayansh Bangali</h3>
+            <p>Computer Science Student | Full-Stack Developer | Innovation Enthusiast</p>
+            <p>📍 Nashik, Maharashtra, India</p>
+            <p>I'm a passionate CS student with a vision to create technology that brings people together. With a strong background in web development and a deep understanding of user experience, I built Zync to address the real need for meaningful connections in our digital age.</p>
+
+            <div class="social-links">
+                <a href="https://github.com/Mayanshh" target="_blank" title="GitHub">
+                    <i class="fab fa-github"></i>
+                </a>
+                <a href="https://www.instagram.com/mayanshh.fr" target="_blank" title="Instagram">
+                    <i class="fab fa-instagram"></i>
+                </a>
+                <a href="https://in.linkedin.com/in/mayansh-bangali" target="_blank" title="LinkedIn">
+                    <i class="fab fa-linkedin"></i>
+                </a>
+                <a href="https://x.com/MayanshB" target="_blank" title="Twitter/X">
+                    <i class="fab fa-twitter"></i>
+                </a>
+                <a href="mailto:mayanshbangali49@gmail.com" title="Email">
+                    <i class="fas fa-envelope"></i>
+                </a>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2><i class="fas fa-chart-line"></i> Platform Statistics</h2>
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-number">1000+</div>
+                    <p>Active Users</p>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">50+</div>
+                    <p>Cities Covered</p>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">10k+</div>
+                    <p>Connections Made</p>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">99.9%</div>
+                    <p>Uptime</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

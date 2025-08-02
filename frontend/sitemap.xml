@@ -1,0 +1,45 @@
+
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
+        xmlns:mobile="http://www.google.com/schemas/sitemap-mobile/1.0">
+    <url>
+        <loc>https://03d99bcb-0b72-4cee-801f-10d0c1418125-00-3ipthwmav6k3d.pike.replit.dev/</loc>
+        <lastmod>2024-12-19</lastmod>
+        <changefreq>daily</changefreq>
+        <priority>1.0</priority>
+        <mobile:mobile/>
+        <image:image>
+            <image:loc>https://03d99bcb-0b72-4cee-801f-10d0c1418125-00-3ipthwmav6k3d.pike.replit.dev/icons/icon-192x192.png</image:loc>
+            <image:title>Zync App Logo</image:title>
+            <image:caption>Zync - Tap. Share. Zync. Social networking app for instant connections</image:caption>
+        </image:image>
+    </url>
+    <url>
+        <loc>https://03d99bcb-0b72-4cee-801f-10d0c1418125-00-3ipthwmav6k3d.pike.replit.dev/about.html</loc>
+        <lastmod>2024-12-19</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.8</priority>
+        <mobile:mobile/>
+    </url>
+    <url>
+        <loc>https://03d99bcb-0b72-4cee-801f-10d0c1418125-00-3ipthwmav6k3d.pike.replit.dev/terms.html</loc>
+        <lastmod>2024-12-19</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.6</priority>
+        <mobile:mobile/>
+    </url>
+    <url>
+        <loc>https://03d99bcb-0b72-4cee-801f-10d0c1418125-00-3ipthwmav6k3d.pike.replit.dev/reset-password.html</loc>
+        <lastmod>2024-12-19</lastmod>
+        <changefreq>yearly</changefreq>
+        <priority>0.3</priority>
+        <mobile:mobile/>
+    </url>
+    <url>
+        <loc>https://03d99bcb-0b72-4cee-801f-10d0c1418125-00-3ipthwmav6k3d.pike.replit.dev/humans.txt</loc>
+        <lastmod>2024-12-19</lastmod>
+        <changefreq>yearly</changefreq>
+        <priority>0.2</priority>
+    </url>
+</urlset>

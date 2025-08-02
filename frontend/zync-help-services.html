@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zync Admin Dashboard</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="/stylesheets/zync-help-services.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+</head>
+
+<body>
+  <div class="wrapper">
+    <section id="dashboard-section" class="active-section">
+      <h1>Dashboard Overview</h1>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <h3>Total Users</h3>
+          <p class="stat-number">1,234</p>
+          <div class="stat-trend positive">+5.2%</div>
+        </div>
+        <div class="stat-card">
+          <h3>Active Users</h3>
+          <p class="stat-number">892</p>
+          <div class="stat-trend positive">+3.8%</div>
+        </div>
+        <div class="stat-card">
+          <h3>New Users</h3>
+          <p class="stat-number">45</p>
+          <div class="stat-trend positive">+12.4%</div>
+        </div>
+        <div class="stat-card warning">
+          <h3>Warned Users</h3>
+          <p class="stat-number">23</p>
+          <div class="stat-trend negative">+2.1%</div>
+        </div>
+        <div class="stat-card">
+          <i class="fas fa-exclamation-triangle stat-icon"></i>
+          <h3>Warned Users</h3>
+          <p class="stat-number">23</p>
+          <div class="stat-trend negative">+2.1%</div>
+        </div>
+        <div class="stat-card">
+          <i class="fas fa-check-circle stat-icon"></i>
+          <h3>Verified Users</h3>
+          <p class="stat-number">0</p>
+          <div class="stat-trend positive">0%</div>
+        </div>
+        <div class="stat-card danger">
+          <h3>Banned Users</h3>
+          <p class="stat-number">12</p>
+          <div class="stat-trend">0%</div>
+        </div>
+        <div class="stat-card danger">
+          <h3>Deleted Users</h3>
+          <p class="stat-number">8</p>
+          <div class="stat-trend negative">+1.2%</div>
+        </div>
+      </div>
+
+      <!-- Charts temporarily removed -->
+
+      <div class="system-status">
+        <h2>System Status</h2>
+        <div class="status-grid">
+          <div class="status-item">
+            <span>Database Connection</span>
+            <div class="status-indicator online"></div>
+          </div>
+          <div class="status-item">
+            <span>WebSocket Connection</span>
+            <div class="status-indicator online"></div>
+          </div>
+          <div class="status-item">
+            <span>Web Server</span>
+            <div class="status-indicator online"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="user-management-section" class="hidden-section">
+      <h1 id="UM-title">User Management</h1>
+      <section class="searchbar-wrapper">
+        <input id="searchbar" type="text" placeholder="Search Users..." />
+        <button id="search-users-btn">&gt;</button>
+      </section>
+      <section class="user-cards-container">
+        <div class="user-card">
+          <aside>
+            <img src="/images/default-avatar.png" alt="User Profile" id="user-profile-img"/>
+          </aside>
+          <aside>
+            <div id="username-wrapper">
+              <p id="name">Name</p>
+              <p id="username">Username</p>
+            </div>
+            <div id="btn-wrapper">
+              <button id="openUserModal-btn">view</button>
+            </div>
+          </aside>
+        </div>
+      </section>
+    </section>
+
+    <nav class="bottom-nav">
+      <button class="nav-btn active" data-section="dashboard">
+        Dashboard
+      </button>
+      <button class="nav-btn" data-section="user-management">
+        Users
+      </button>
+    </nav>
+
+    <section class="user-details-modal">
+      <button class="close-modal-btn" onclick="toggleModal()">×</button>
+      <div class="modal-header">
+        <div class="user-basic-info">
+          <img src="/images/default-avatar.png" alt="User Profile" id="modal-user-img"/>
+          <div class="modal-user-names">
+            <h2 id="modal-name">John Doe</h2>
+            <p id="modal-username">@johndoe</p>
+            <p id="modal-connections">Connections: 150</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-details">
+        <div class="detail-section">
+          <h3>Account Information</h3>
+          <div class="detail-grid">
+            <div class="detail-item">
+              <span>User ID:</span>
+              <p>#12345</p>
+            </div>
+            <div class="detail-item">
+              <span>IP Address:</span>
+              <p>192.168.1.1</p>
+            </div>
+            <div class="detail-item">
+              <span>Email:</span>
+              <p>john@example.com</p>
+            </div>
+            <div class="detail-item">
+              <span>Registered:</span>
+              <p>Jan 1, 2024</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <h3>Status Information</h3>
+          <div class="status-grid">
+            <div class="status-item">
+              <span>Activity Status</span>
+              <p class="status-badge online">Online</p>
+            </div>
+            <div class="status-item">
+              <span>Account Status</span>
+              <p class="status-badge active">Active</p>
+            </div>
+            <div class="status-item">
+              <span>User Mode</span>
+              <p class="status-badge normal">Normal</p>
+            </div>
+            <div class="status-item">
+              <span>Verification Status</span>
+              <p class="status-badge normal">Not Verified</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <h3>User Posts</h3>
+          <div id="user-posts-container" class="modal-posts-container">
+            <div class="modal-posts-loading">
+              <i class="fas fa-spinner fa-spin"></i>
+              <p>Loading posts...</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <h3>User Reports</h3>
+          <div class="reports-container">
+            <p class="no-reports">No reports found</p>
+          </div>
+        </div>
+
+        <div class="detail-section admin-actions">
+          <h3>Admin Actions</h3>
+          <div class="admin-buttons">
+            <button class="admin-btn warn" data-user-id="">
+              <i class="fas fa-exclamation-triangle"></i> Warn User
+            </button>
+            <button class="admin-btn ban" data-user-id="">
+              <i class="fas fa-user-slash"></i> Ban User
+            </button>
+            <button class="admin-btn delete" data-user-id="">
+              <i class="fas fa-trash"></i> Delete Account
+            </button>
+             <button class="admin-btn verify-btn" id="verify-btn">
+              <i class="fas fa-check-circle"></i>
+              <span id="verify-btn-text">Verify User</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
+    <script src="/javascripts/zync-help-services.js"></script>
+</body>
+</html>

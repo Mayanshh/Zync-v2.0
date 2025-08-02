@@ -1,0 +1,39 @@
+
+/* TEAM */
+Developer: Zync Team
+Contact: hello [at] zync-app.com
+From: India
+
+/* THANKS */
+To all users who help make Zync better
+
+/* SITE */
+Last update: 2024/12/19
+Language: English
+Technology: Node.js, MongoDB, Socket.IO, Progressive Web App
+Standards: HTML5, CSS3, ES6+, WebRTC
+Components: Real-time messaging, Location services, Push notifications
+Software: Visual Studio Code, MongoDB Compass
+/* TEAM */
+    Developer: Zync Development Team
+    Contact: contact [at] zync-app.com
+    Twitter: @ZyncApp
+    From: Global
+
+/* THANKS */
+    Icons: Font Awesome
+    Fonts: Google Fonts (Poppins)
+
+/* SITE */
+    Last update: 2024/12/19
+    Standards: HTML5, CSS3, ES6+
+    Components: Node.js, Express, Socket.IO, MongoDB
+    Software: Built with Replit
+    
+/* FEATURES */
+    Progressive Web App (PWA)
+    Real-time messaging
+    Location-based networking
+    End-to-end encryption
+    Anonymous interactions
+    Cross-platform compatibility
