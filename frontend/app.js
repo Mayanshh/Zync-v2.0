@@ -327,14 +327,30 @@ async function init() {
     
     // Initialize push notifications
     try {
-        if (typeof window !== 'undefined' && window.ZyncNotifications && typeof window.ZyncNotifications.initialize === 'function') {
-            await window.ZyncNotifications.initialize();
-            console.log("Push notifications initialized successfully");
+        if (typeof window !== 'undefined' && window.ZyncNotifications) {
+            if (typeof window.ZyncNotifications.initialize === 'function') {
+                await window.ZyncNotifications.initialize();
+                console.log("Push notifications initialized successfully");
+            } else {
+                // Use the initializeNotificationSystem function
+                initializeNotificationSystem();
+                console.log("Notification system initialized successfully");
+            }
+        } else if (typeof initializePushNotifications === 'function') {
+            initializePushNotifications();
+            console.log("Push notifications initialized via fallback");
         } else {
             console.log("Push notifications not available - using polling fallback");
+            if (typeof setupNotificationPolling === 'function') {
+                setupNotificationPolling();
+            }
         }
     } catch (error) {
         console.warn("Push notification setup failed:", error);
+        // Fallback to polling
+        if (typeof setupNotificationPolling === 'function') {
+            setupNotificationPolling();
+        }
     }
     
     // Fetch CSRF token first

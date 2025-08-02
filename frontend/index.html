@@ -673,8 +673,8 @@
                         loadSocketIO()
                             .then(() => {
                                 console.log('Socket.IO loaded successfully');
-                                if (typeof initializePushNotifications === 'function') {
-                                    initializePushNotifications();
+                                if (window.ZyncNotifications && typeof window.ZyncNotifications.initialize === 'function') {
+                                    window.ZyncNotifications.initialize();
                                 }
                             })
                             .catch(() => {
@@ -691,6 +691,12 @@
                     }
                 } else {
                     console.log('Socket.IO loaded successfully');
+                    if (window.ZyncNotifications && typeof window.ZyncNotifications.initialize === 'function') {
+                        window.ZyncNotifications.initialize();
+                    }
+                }
+            }, 1000);
+        });cket.IO loaded successfully');
                     if (typeof initializePushNotifications === 'function') {
                         initializePushNotifications();
                     } else {
