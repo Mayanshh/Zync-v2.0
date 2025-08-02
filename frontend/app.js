@@ -348,14 +348,27 @@ async function init() {
     loadPendingRequestsFromStorage(); // Load pending requests on initialization
 }
 
-// Fetch CSRF token
+// Fetch CSRF token with retry logic
 async function fetchCSRFToken() {
     try {
-        const response = await fetch('/api/csrf-token');
+        const response = await fetch('/api/csrf-token', {
+            method: 'GET',
+            credentials: 'same-origin',
+            headers: {
+                'Cache-Control': 'no-cache'
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Failed to fetch CSRF token: ${response.status}`);
+        }
+        
         const data = await response.json();
         csrfToken = data.csrfToken;
+        console.log('CSRF token fetched successfully');
+        return csrfToken;
     } catch (error) {
-        console.error('Error fetching security token');
+        console.error('Error fetching security token:', error);
         throw error;
     }
 }
@@ -1055,11 +1068,10 @@ async function handleLogin() {
     }
 
     try {
-        const response = await fetch('/api/login', {
+        const response = await apiRequest('/api/login', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'CSRF-Token': csrfToken
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({ username, password })
         });
@@ -1121,11 +1133,10 @@ async function handleRegister() {
     }
 
     try {
-        const response = await fetch('/api/register', {
+        const response = await apiRequest('/api/register', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'CSRF-Token': csrfToken
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({
                 username,
@@ -2121,11 +2132,10 @@ async function updateLocation(latitude, longitude) {
 
         console.log('Sending location update:', { latitude: lat, longitude: lng });
 
-        const response = await fetch('/api/location', {
+        const response = await apiRequest('/api/location', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'CSRF-Token': csrfToken
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({ latitude: lat, longitude: lng })
         });
@@ -2533,11 +2543,10 @@ async function handleSubmitPost() {
         }
 
         // Send the request with proper error handling
-        const response = await fetch('/api/post', {
+        const response = await apiRequest('/api/post', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'CSRF-Token': csrfToken
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify(postData)
         });
@@ -3925,11 +3934,10 @@ async function handleSendMessage() {
     addMessageToChat(currentUser._id, content, 'sent', new Date(), false, false, '', null, true, 'sent');
 
     try {
-        const response = await fetch('/api/message', {
+        const response = await apiRequest('/api/message', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'CSRF-Token': csrfToken
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({
                 toUserId: currentChatUserId,
@@ -4003,11 +4011,10 @@ async function toggleAnonymousMode() {
         anonymousModeToggle.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
         anonymousModeToggle.disabled = true;
 
-        const response = await fetch('/api/toggle-anonymous', {
+        const response = await apiRequest('/api/toggle-anonymous', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'CSRF-Token': csrfToken
+                'Content-Type': 'application/json'
             }
         });
 
@@ -4524,11 +4531,10 @@ async function handleSaveProfile() {
             song3Input.value.trim()
         ].filter(song => song !== ''); // Remove empty songs
 
-        const response = await fetch('/api/profile', {
+        const response = await apiRequest('/api/profile', {
             method: 'PUT',
             headers: {
-                'Content-Type': 'application/json',
-                'CSRF-Token': csrfToken
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({
                 fullName: document.getElementById('profile-name').textContent,
@@ -4943,11 +4949,10 @@ async function handleConnect(userId) {
         connectBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
         connectBtn.disabled = true;
         
-        const response = await fetch('/api/request', {
+        const response = await apiRequest('/api/request', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'CSRF-Token': csrfToken
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({
                 toUserId: userId
@@ -5061,11 +5066,10 @@ async function handleRequestResponse(status) {
             </div>
         `;
         
-        const response = await fetch(`/api/request/${currentRequestId}`, {
+        const response = await apiRequest(`/api/request/${currentRequestId}`, {
             method: 'PUT',
             headers: {
-                'Content-Type': 'application/json',
-                'CSRF-Token': csrfToken
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({ status })
         });
@@ -5206,7 +5210,39 @@ function addCSRFToken(options = {}) {
         options.headers['CSRF-Token'] = csrfToken;
     }
 
+    // Ensure credentials are included for cookie-based CSRF
+    options.credentials = 'same-origin';
+
     return options;
+}
+
+// Enhanced fetch wrapper that automatically includes CSRF token
+async function apiRequest(url, options = {}) {
+    // Add CSRF token automatically for non-GET requests
+    if (!options.method || options.method.toUpperCase() !== 'GET') {
+        options = addCSRFToken(options);
+    }
+    
+    try {
+        const response = await fetch(url, options);
+        
+        // If CSRF token is invalid, try to refetch it once
+        if (response.status === 403 && response.statusText.includes('CSRF')) {
+            console.log('CSRF token expired, refetching...');
+            await fetchCSRFToken();
+            
+            // Retry the request with new token
+            if (!options.method || options.method.toUpperCase() !== 'GET') {
+                options = addCSRFToken(options);
+            }
+            return await fetch(url, options);
+        }
+        
+        return response;
+    } catch (error) {
+        console.error('API request failed:', error);
+        throw error;
+    }
 }
 
 // Setup forgot password functionality

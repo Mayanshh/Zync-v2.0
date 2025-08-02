@@ -604,7 +604,7 @@ app.use(session({
     maxAge: 1000 * 60 * 60 * 24,
     httpOnly: true,
     sameSite: 'lax', // Changed to lax for better compatibility
-    secure: process.env.NODE_ENV === 'production',
+    secure: false, // Set to false for development and testing
     path: '/'
   },
   name: 'sessionId',
@@ -618,21 +618,52 @@ app.use(cookieParser());
 const csrf = require('csurf');
 const csrfProtection = csrf({ 
   cookie: {
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax'
+    secure: false, // Set to false for development and testing
+    sameSite: 'lax',
+    httpOnly: false // Allow client-side access to CSRF cookie
   }
 });
 
-// Apply CSRF protection selectively
-app.use((req, res, next) => {
-  if (req.path === '/api/csrf-token' || req.method === 'GET' || process.env.NODE_ENV !== 'production') {
-    next();
-  } else {
-    csrfProtection(req, res, next);
+// Create a middleware that conditionally applies CSRF protection
+const conditionalCSRF = (req, res, next) => {
+  // Skip CSRF for specific paths and methods
+  const skipPaths = [
+    '/api/csrf-token',
+    '/health',
+    '/api',
+    '/socket.io',
+    '/manifest.json',
+    '/robots.txt',
+    '/sitemap.xml',
+    '/browserconfig.xml'
+  ];
+  
+  const skipMethods = ['GET', 'HEAD', 'OPTIONS'];
+  
+  // Check if we should skip CSRF protection
+  if (skipMethods.includes(req.method) || 
+      skipPaths.some(path => req.path.startsWith(path)) ||
+      req.path.endsWith('.js') ||
+      req.path.endsWith('.css') ||
+      req.path.endsWith('.html') ||
+      req.path.endsWith('.ico') ||
+      req.path.endsWith('.png') ||
+      req.path.endsWith('.mp3')) {
+    return next();
   }
-});
+  
+  // Apply CSRF protection for POST/PUT/PATCH/DELETE requests to API endpoints
+  if (req.path.startsWith('/api/') && !skipMethods.includes(req.method)) {
+    return csrfProtection(req, res, next);
+  }
+  
+  next();
+};
 
-// Expose CSRF token to frontend
+// Apply conditional CSRF protection
+app.use(conditionalCSRF);
+
+// Expose CSRF token to frontend (this route needs CSRF protection to generate token)
 app.get('/api/csrf-token', csrfProtection, (req, res) => {
   res.json({ csrfToken: req.csrfToken() });
 });
