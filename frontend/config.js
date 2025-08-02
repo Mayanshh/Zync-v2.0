@@ -1,15 +1,11 @@
 window.CONFIG = {
-  API_BASE_URL: window.location.hostname === 'localhost'
+  API_BASE_URL: window.location.hostname === 'localhost' 
     ? 'http://localhost:5000'
-    : window.location.hostname.includes('replit.dev')
-    ? window.location.origin
-    : window.location.origin,
+    : 'https://zync-631m.onrender.com',
 
   SOCKET_URL: window.location.hostname === 'localhost'
     ? 'http://localhost:5000'
-    : window.location.hostname.includes('replit.dev')
-    ? window.location.origin
-    : window.location.origin,
+    : 'https://your-render-backend-url.onrender.com',
 
   ENVIRONMENT: (window.location.hostname === 'localhost' || window.location.hostname.includes('replit.dev')) ? 'development' : 'production',
 
